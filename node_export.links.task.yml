@@ -1,0 +1,4 @@
+node_export.export:
+  route_name: node_export.export
+  base_route: entity.node.canonical
+  title: Node export

@@ -1,0 +1,14 @@
+node_export.export:
+  path: '/node/{node}/export'
+  defaults:
+    _form: '\Drupal\node_export\Form\NodeExportForm'
+    _title: 'Export'
+  requirements:
+    _permission: 'access content'
+node_export.import:
+  path: '/node/add/import'
+  defaults:
+    _form: '\Drupal\node_export\Form\NodeImportForm'
+    _title: 'Import'
+  requirements:
+    _permission: 'access content'
