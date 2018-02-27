@@ -68,8 +68,6 @@ class NodeImportForm extends FormBase {
   //        'field_date'=>[ '2017-07-22'],
   //        )
   // );
-print_r($node['comment']);
-die();
       $nodenew = Node::create([
         'type'        => $node['type']['target_id'],
         'title'       => $node['title'],
