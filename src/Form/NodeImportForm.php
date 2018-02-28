@@ -52,31 +52,58 @@ class NodeImportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $contentTypes = \Drupal::service('entity.manager')->getStorage('node_type')->loadMultiple();
+    $contentTypesList = [];    
+    foreach ($contentTypes as $contentType) {
+      $contentTypesList[$contentType->id()] =$contentType->id();// $contentType->label();
+    }
+    $json=$form_state->getValue('paste');
+    $nodes=json_decode($json,true);
+    
+    foreach ($nodes as $node) {
+      # code...
+    if(in_array($node['type']['target_id'], $contentTypesList))
+    {
+      
+    }
+    else {
+      $form_state->setErrorByName('Content Type', $this->t('The content type of the node you are trying to insert does not match any content type in your Drupal site'));  
+    }
+  }
+}
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) { 
       $json=$form_state->getValue('paste');
+      $nodes=json_decode($json,true);
 
-      $node=json_decode($json,true);
-  //     $node2 = Entity::create('node', array(
-  //        'type' => 'new_content_type',
-  //        'title' =>'Creating another node',
-  //        'body' => array(
-  //          'value' =>'The body of the content',
-  //          'format' => 'full_html',
-  //            ),
-  //        'field_mail'=>'email@gmail.com',
-  //        'field_link'=>'http://www.example.com',
-  //        'field_date'=>[ '2017-07-22'],
-  //        )
-  // );
-      $nodenew = Node::create([
-        'type'        => $node['type']['target_id'],
-        'title'       => $node['title'],
-        'body'        => $node['body'],
-        'field_image' => $node['field_image'],
-        'field_tags' => $node['field_tags'],
-        'comment' => $node['comment'],
-      ]);
-      $nodenew->save();
+      // foreach ($nodes as $node) {
+      $batch = array(
+      'title' => t('Importing Nodes...'),
+      'operations' => [],
+      'init_message'     => t('Imporitng'),
+      'progress_message' => t('Processed @current out of @total.'),
+      'error_message'    => t('An error occurred during processing'),
+      'finished' => '\Drupal\node_export\nodeImport::NodeImportFinishedCallback',
+    );
+     foreach ($nodes as $node) {
+      $batch['operations'][] = ['\Drupal\node_export\nodeImport::NodeImport',[$node]];
+    }  
+    batch_set($batch);
+
+        // $nodenew = Node::create([
+        //   'type'        => $node['type']['target_id'],
+        //   'title'       => $node['title'],
+        //   'body'        => $node['body'],
+        //   'field_image' => $node['field_image'],
+        //   'field_tags' => $node['field_tags'],
+        //   'comment' => $node['comment'],
+        // ]);
+        // $nodenew->save();
+      
       // print_r($node->title->value);
       // print_r($node->type->value);
       // $node->is_new = true;
@@ -86,6 +113,6 @@ class NodeImportForm extends FormBase {
       
      // node_save($node);
 
-    drupal_set_message(t('Node Content Type has been changed succesfully.'));
+    drupal_set_message(t('Node has been imported succesfully.'));
   }
 }
