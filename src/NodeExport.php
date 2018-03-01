@@ -1,20 +1,26 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\node_export\nodeExport
+ */
 
 namespace Drupal\node_export;
+
 use Drupal\node\Entity\Node;
 
-class nodeExport {
-  public static function NodeExport ($nid, &$context){
+/**
+ * Provides a Node Export function.
+ */
+class NodeExport {
+  public static function nodeExport ($nid, &$context){
     $message = 'Exporting Nodes...';
     $results = array();
-    print_r($nid);
-    die();
-    $context['results'][$nid] =  \Drupal\node\Entity\Node::load($nid);
-   
+    // Loads a node of given id.
+    $context['results'][] = "hello"; //\Drupal\node\Entity\Node::load($nid);
     $context['message'] = $message;
     $context['results'] = $results;
   }
-  function NodeExportFinishedCallback($success, $results, $operations) {
+  function nodeExportFinishedCallback($success, $results, $operations) {
     // The 'success' parameter means no fatal PHP errors were detected. All
     // other error management should be handled using 'results'.
     if ($success) {
@@ -25,11 +31,11 @@ class nodeExport {
     }
     else {
       $message = t('Finished with an error.');
-    }
-      print_r(count($results));
-  
-    die();
-    drupal_set_message($nodes);
-  }
-  
+    }  
+        //drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
+
+     print_r($results);
+     die();
+    // drupal_set_message($results);
+  }  
 }

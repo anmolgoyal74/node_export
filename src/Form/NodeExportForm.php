@@ -32,7 +32,9 @@ class NodeExportForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // Reads the Node id from URL
     $nid = \Drupal::routeMatch()->getParameter('node');
+    // Load the node
     $node = \Drupal\node\Entity\Node::load($nid);
     $result=array();
     $count=0;
@@ -40,7 +42,7 @@ class NodeExportForm extends FormBase {
       $result[$count][$key]=$node->get($key)->getValue()[0];
     }
 
-     $json=json_encode($result);
+    $json=json_encode($result);
     $form['export_code'] = [
       '#type' => 'textarea',
       '#value' => $json,
@@ -56,16 +58,12 @@ class NodeExportForm extends FormBase {
       '#type' => 'hidden',
       '#value' => $nid,
     );
-
     return $form;
   }
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    
-  
-    
-    drupal_set_message(t('Node Content Type has been changed succesfully.'));
+    drupal_set_message(t('Node has been expoted'));
   }
 }

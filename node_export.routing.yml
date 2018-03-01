@@ -5,6 +5,7 @@ node_export.export:
     _title: 'Export'
   requirements:
     _permission: 'access content'
+
 node_export.import:
   path: '/node/add/import'
   defaults:
@@ -12,17 +13,27 @@ node_export.import:
     _title: 'Import'
   requirements:
     _permission: 'access content'
-node_export.export_node:
-  path: '/node/export'
+
+node_export.export_content_type:
+  path: '/node/export/contenttype'
   defaults:
     _form: '\Drupal\node_export\Form\MultipleNodeExportForm'
-    _title: 'Export'
+    _title: 'Node Exports : Multiple'
   requirements:
     _permission: 'access content'
+
 node_export.export_multiple_submit:
   path: '/node/export/{content_type}'
   defaults:
     _title: 'Node Exports : Multiple'
     _form: '\Drupal\node_export\Form\MultipleNodeExportConfirm'
+  requirements:
+    _permission: 'access content'
+
+node_export.export_nids:
+  path: '/node/export/nids'
+  defaults:
+    _title: 'Node Exports : Nids'
+    _form: '\Drupal\node_export\Form\MultipleNidsExportForm'
   requirements:
     _permission: 'access content'

@@ -7,4 +7,4 @@ node_export.export:
   title: 'Node Export - Export'
   parent: system.admin_content  
   description: 'Export the Node'
-  route_name: node_export.export_node
+  route_name: node_export.export_content_type

@@ -34,6 +34,7 @@ class MultipleNodeExportForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // loads all the content typess in the drupal site
     $contentTypes = \Drupal::service('entity.manager')->getStorage('node_type')->loadMultiple();
     $contentTypesList = [];
     
@@ -53,11 +54,8 @@ class MultipleNodeExportForm extends FormBase {
       '#type' => 'submit',
       '#value' => t('Export'),
     );
-
     return $form;
   }
-
-
 
   /**
    * {@inheritdoc}
@@ -65,8 +63,8 @@ class MultipleNodeExportForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $export_type = $form_state->getValue('export_type');
 
-    // $url = Url::fromRoute('node_export.export_multiple_submit', $route_parameters = ['content_type' => $export_type]);
-  $content_type = \Drupal::routeMatch()->getParameter('content_type');
+    //$content_type = \Drupal::routeMatch()->getParameter('content_type');
+    // loads all the node of selected content type
     $nids = \Drupal::entityQuery('node')->condition('type',$export_type)->execute();
     $batch = array(
       'title' => t('Generating Export Code...'),
@@ -74,15 +72,12 @@ class MultipleNodeExportForm extends FormBase {
       'init_message'     => t('Exporting '),
       'progress_message' => t('Processed @current out of @total.'),
       'error_message'    => t('An error occurred during processing'),
-      'finished' => '\Drupal\node_export\nodeExport::NodeExportFinishedCallback',
+      'finished' => '\Drupal\node_export\NodeExport::nodeExportFinishedCallback',
     );
      foreach ($nids as $nid) {
-      $batch['operations'][] = ['\Drupal\node_export\nodeExport::NodeExport',[$nid]];
+      $batch['operations'][] = ['\Drupal\node_export\NodeExport::nodeExport',[$nid]];
     }  
-
-    batch_set($batch);
-    //$form_state->setRedirectUrl($url);
-    
+    batch_set($batch);  
     drupal_set_message(t('Please copy the Export Code and paste in your other drupal site.'));
   }
 }

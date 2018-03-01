@@ -1,13 +1,21 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\node_export\NodeImport
+ */
 
 namespace Drupal\node_export;
+
 use Drupal\node\Entity\Node;
 
-class nodeImport {
-  public static function NodeImport ($node, &$context){
+/**
+ * Provides a Node Import function.
+ */
+class NodeImport {
+  public static function nodeImport ($node, &$context){
     $message = 'Importing Nodes...';
     $results = array();
-    //die();
+    // Creates an instance of node.
     $nodenew = Node::create([
           'type'        => $node['type']['target_id'],
           'title'       => $node['title'],
@@ -16,11 +24,12 @@ class nodeImport {
           'field_tags' => $node['field_tags'],
           'comment' => $node['comment'],
         ]);
-        $nodenew->save();
+    // Save the node into the database.
+    $nodenew->save();
     $context['message'] = $message;
     $context['results'] = $results;
   }
-  function NodeImportFinishedCallback($success, $results, $operations) {
+  function nodeImportFinishedCallback($success, $results, $operations) {
     // The 'success' parameter means no fatal PHP errors were detected. All
     // other error management should be handled using 'results'.
     if ($success) {
