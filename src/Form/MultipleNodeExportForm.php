@@ -77,7 +77,8 @@ class MultipleNodeExportForm extends FormBase {
      foreach ($nids as $nid) {
       $batch['operations'][] = ['\Drupal\node_export\NodeExport::nodeExport',[$nid]];
     }  
-    batch_set($batch);  
+    batch_set($batch);
+    
     drupal_set_message(t('Please copy the Export Code and paste in your other drupal site.'));
   }
 }

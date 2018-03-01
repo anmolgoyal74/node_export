@@ -27,7 +27,7 @@ class NodeImport {
     // Save the node into the database.
     $nodenew->save();
     $context['message'] = $message;
-    $context['results'] = $results;
+    $context['results'][] = $results;
   }
   function nodeImportFinishedCallback($success, $results, $operations) {
     // The 'success' parameter means no fatal PHP errors were detected. All
