@@ -64,6 +64,14 @@ class NodeExportForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    drupal_set_message(t('Node has been expoted'));
+    $data = $form_state->getValue('export_code');
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename='.basename('node.json'));
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize('node.json'));
+    print($data);
+    exit;
   }
 }
