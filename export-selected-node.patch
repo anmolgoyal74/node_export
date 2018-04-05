@@ -1,0 +1,383 @@
+diff --git a/config/install/system.action.bulk_node_export.yml b/config/install/system.action.bulk_node_export.yml
+new file mode 100644
+index 0000000..e981445
+--- /dev/null
++++ b/config/install/system.action.bulk_node_export.yml
+@@ -0,0 +1,11 @@
++langcode: en
++status: true
++dependencies:
++  module:
++    - node
++    - action
++    - node_export
++id: bulk_node_export
++label: 'Node Export'
++type: node
++plugin: bulk_node_export
+diff --git a/node_export.routing.yml b/node_export.routing.yml
+index 6218db9..cf34e45 100755
+--- a/node_export.routing.yml
++++ b/node_export.routing.yml
+@@ -37,3 +37,10 @@ node_export.export_nids:
+     _form: '\Drupal\node_export\Form\MultipleNidsExportForm'
+   requirements:
+     _permission: 'access content'
++node_export.bulk_export_form:
++  path: '/admin/bulk-export'
++  defaults:
++    _title: 'Bulk Node Export'
++    _form: '\Drupal\node_export\Form\BulkNodeExport'
++  requirements:
++    _permission: 'access content'
+diff --git a/src/BulkUpdateFields.php b/src/BulkUpdateFields.php
+new file mode 100644
+index 0000000..48ba948
+--- /dev/null
++++ b/src/BulkUpdateFields.php
+@@ -0,0 +1,52 @@
++<?php
++
++namespace Drupal\bulk_update_fields;
++
++/**
++ * BulkUpdateFields.
++ */
++class BulkUpdateFields {
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function updateFields($entities, $fields, &$context) {
++    $message = 'Updating Fields...';
++    $results = [];
++    $update = FALSE;
++    foreach ($entities as $entity) {
++      foreach ($fields as $field_name => $field_value) {
++        if ($entity->hasField($field_name)) {
++          $field_value = array_filter(array_filter($field_value, "is_numeric", ARRAY_FILTER_USE_KEY));
++          $entity->get($field_name)->setValue($field_value);
++          $update = TRUE;
++        }
++      }
++      if ($update) {
++        $entity->setNewRevision();
++        $entity->save();
++      }
++    }
++    $context['message'] = $message;
++    $context['results'] = $results;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function bulkUpdateFieldsFinishedCallback($success, $results, $operations) {
++    // The 'success' parameter means no fatal PHP errors were detected. All
++    // other error management should be handled using 'results'.
++    if ($success) {
++      $message = \Drupal::translation()->formatPlural(
++        count($results),
++        'One operations processed.', '@count operations processed.'
++      );
++    }
++    else {
++      $message = t('Finished with an error.');
++    }
++    drupal_set_message($message);
++  }
++
++}
+diff --git a/src/Form/BulkNodeExport.php b/src/Form/BulkNodeExport.php
+new file mode 100644
+index 0000000..54e9aeb
+--- /dev/null
++++ b/src/Form/BulkNodeExport.php
+@@ -0,0 +1,144 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\node_export\Form\BulkNodeExport
++ */
++namespace Drupal\node_Export\Form;
++
++use Drupal\Core\Form\FormBase;
++use Drupal\Core\Form\FormState;
++use Drupal\Core\Form\FormInterface;
++use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\Session\AccountInterface;
++use Drupal\Core\Session\SessionManagerInterface;
++use Drupal\user\PrivateTempStoreFactory;
++use Symfony\Component\DependencyInjection\ContainerInterface;
++use Drupal\Core\Routing\RouteBuilderInterface;
++
++
++/**
++ * Provides a Node Export form.
++ */
++class BulkNodeExport extends FormBase {
++/**
++   * Set a var to make stepthrough form.
++   *
++   * @var step
++   */
++  protected $step = 1;
++  /**
++   * Keep track of user input.
++   *
++   * @var userInput
++   */
++  protected $userInput = [];
++
++  /**
++   * Tempstorage.
++   *
++   * @var tempStoreFactory
++   */
++  protected $tempStoreFactory;
++
++  /**
++   * Session.
++   *
++   * @var sessionManager
++   */
++  private $sessionManager;
++
++  /**
++   * User.
++   *
++   * @var currentUser
++   */
++  private $currentUser;
++
++  /**
++   * The route builder.
++   *
++   * @var \Drupal\Core\Routing\RouteBuilderInterface
++   */
++  protected $routeBuilder;
++
++  /**
++   * Constructs a \Drupal\node_export\Form\BulkNodeExport.
++   *
++   * @param \Drupal\user\PrivateTempStoreFactory $temp_store_factory
++   *   Temp storage.
++   * @param \Drupal\Core\Session\SessionManagerInterface $session_manager
++   *   Session.
++   * @param \Drupal\Core\Session\AccountInterface $current_user
++   *   User.
++   * @param \Drupal\Core\Routing\RouteBuilderInterface $route_builder
++   *   Route.
++   */
++  public function __construct(PrivateTempStoreFactory $temp_store_factory, SessionManagerInterface $session_manager, AccountInterface $current_user, RouteBuilderInterface $route_builder) {
++    $this->tempStoreFactory = $temp_store_factory;
++    $this->sessionManager = $session_manager;
++    $this->currentUser = $current_user;
++    $this->routeBuilder = $route_builder;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function create(ContainerInterface $container) {
++    return new static(
++      $container->get('user.private_tempstore'),
++      $container->get('session_manager'),
++      $container->get('current_user'),
++      $container->get('router.builder')
++    );
++  }
++  /**
++   * {@inheritdoc}
++   */
++  public function getFormId() {
++    return 'bulk_export_form';
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function buildForm(array $form, FormStateInterface $form_state) {
++   drupal_set_message($this->t('This module is experiemental. PLEASE do not use on production databases without prior testing and a complete database dump.'), 'warning'); 
++    $this->userInput['entities'] = $this->tempStoreFactory
++          ->get('node_export_ids')
++          ->get($this->currentUser->id());
++    $count=0;
++    foreach ($this->userInput['entities'] as $node) {
++      foreach ($node as $key=>$value) {
++        $result[$count][$key]=$node->get($key)->getValue()[0];
++      }
++      $count++;
++    }
++
++    $json=json_encode($result);
++    $form['export_code'] = [
++      '#type' => 'textarea',
++      '#value' => $json,
++      '#title' => t('Node Export Code is :'),
++      '#rows' => '15',
++    ];    
++    $form['submit'] = array(
++      '#type' => 'submit',
++      '#value' => t('Download'),
++    );
++    return $form;
++  }
++  /**
++   * {@inheritdoc}
++   */
++  public function submitForm(array &$form, FormStateInterface $form_state) {
++    $data = $form_state->getValue('export_code');
++    header('Content-Type: application/octet-stream');
++    header('Content-Disposition: attachment; filename='.basename('node.json'));
++    header('Expires: 0');
++    header('Cache-Control: must-revalidate');
++    header('Pragma: public');
++    header('Content-Length: ' . filesize('node.json'));
++    print($data);
++    exit;  
++  }
++}
+\ No newline at end of file
+diff --git a/src/Plugin/Action/BulkNodeExport.php b/src/Plugin/Action/BulkNodeExport.php
+new file mode 100644
+index 0000000..0eae28b
+--- /dev/null
++++ b/src/Plugin/Action/BulkNodeExport.php
+@@ -0,0 +1,136 @@
++<?php
++
++namespace Drupal\node_export\Plugin\Action;
++
++use Drupal\Core\Action\ActionBase;
++use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
++use Drupal\Core\Session\AccountInterface;
++use Symfony\Component\DependencyInjection\ContainerInterface;
++use Drupal\user\PrivateTempStoreFactory;
++use Drupal\Core\Session\SessionManagerInterface;
++
++/**
++ * Update Fields.
++ *
++ * @Action(
++ *   id = "bulk_node_export",
++ *   label = "Node Export",
++ *   type = "node",
++ *   confirm_form_route_name = "node_export.bulk_export_form"
++ * )
++ */
++class BulkNodeExport extends ActionBase implements ContainerFactoryPluginInterface {
++  /**
++   * The plugin_id.
++   *
++   * @var pluginId
++   */
++  protected $pluginId;
++
++  /**
++   * The plugin implementation definition.
++   *
++   * @var pluginDefinition
++   */
++  protected $pluginDefinition;
++
++  /**
++   * Configuration information passed into the plugin.
++   *
++   * When using an interface like
++   * \Drupal\Component\Plugin\ConfigurablePluginInterface, this is where the
++   * configuration should be stored.
++   *
++   * Plugin configuration is optional, so plugin implementations must provide
++   * their own setters and getters.
++   *
++   * @var configuration
++   */
++  protected $configuration;
++
++  /**
++   * The tempstore factory.
++   *
++   * @var tempStoreFactory
++   */
++  protected $tempStoreFactory;
++
++  /**
++   * Session.
++   *
++   * @var sessionManager
++   */
++  private $sessionManager;
++
++  /**
++   * User.
++   *
++   * @var currentUser
++   */
++  private $currentUser;
++
++  /**
++   * Constructs a BulkUpdateFields object.
++   *
++   * @param array $configuration
++   *   A configuration array containing information about the plugin instance.
++   * @param string $plugin_id
++   *   The plugin_id for the plugin instance.
++   * @param mixed $plugin_definition
++   *   The plugin implementation definition.
++   * @param \Drupal\user\PrivateTempStoreFactory $temp_store_factory
++   *   The tempstore factory.
++   * @param \Drupal\Core\Session\SessionManagerInterface $session_manager
++   *   The session.
++   * @param \Drupal\Core\Session\AccountInterface $current_user
++   *   The session.
++   */
++  public function __construct(array $configuration, $plugin_id, $plugin_definition, PrivateTempStoreFactory $temp_store_factory, SessionManagerInterface $session_manager, AccountInterface $current_user) {
++    $this->configuration = $configuration;
++    $this->pluginId = $plugin_id;
++    $this->pluginDefinition = $plugin_definition;
++    $this->tempStoreFactory = $temp_store_factory;
++    $this->sessionManager = $session_manager;
++    $this->currentUser = $current_user;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
++    return new static($configuration, $plugin_id, $plugin_definition,
++      $container->get('user.private_tempstore'),
++      $container->get('session_manager'),
++      $container->get('current_user')
++    );
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function executeMultiple(array $entities) {
++    $ids = [];
++    foreach ($entities as $entity) {
++      $ids[$entity->id()] = $entity;
++    }
++    // print_r($ids);
++    // die();
++     $this->tempStoreFactory->get('node_export_ids')
++       ->set($this->currentUser->id(), $ids);
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function execute(ContentEntityInterface $entity = NULL) {
++    $this->executeMultiple([$entity]);
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
++    return $object->access('update', $account, $return_as_object);
++  }
++
++}

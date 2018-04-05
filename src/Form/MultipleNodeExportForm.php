@@ -62,8 +62,6 @@ class MultipleNodeExportForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $export_type = $form_state->getValue('export_type');
-
-    //$content_type = \Drupal::routeMatch()->getParameter('content_type');
     // loads all the node of selected content type
     $nids = \Drupal::entityQuery('node')->condition('type',$export_type)->execute();
     $batch = array(
@@ -74,11 +72,16 @@ class MultipleNodeExportForm extends FormBase {
       'error_message'    => t('An error occurred during processing'),
       'finished' => '\Drupal\node_export\NodeExport::nodeExportFinishedCallback',
     );
+    if(!empty($nids))
+    {
      foreach ($nids as $nid) {
       $batch['operations'][] = ['\Drupal\node_export\NodeExport::nodeExport',[$nid]];
-    }  
-    batch_set($batch);
-    
-    drupal_set_message(t('Please copy the Export Code and paste in your other drupal site.'));
+    }
+      batch_set($batch);
+      drupal_set_message(t('Please copy the Export Code and paste in your other drupal site.'));
+    }
+    else {
+      drupal_set_message(t('There are no nodes to export.'),'error');
+    }
   }
 }
