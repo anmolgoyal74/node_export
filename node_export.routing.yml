@@ -37,3 +37,10 @@ node_export.export_nids:
     _form: '\Drupal\node_export\Form\MultipleNidsExportForm'
   requirements:
     _permission: 'access content'
+node_export.bulk_export_form:
+  path: '/admin/bulk-export'
+  defaults:
+    _title: 'Bulk Node Export'
+    _form: '\Drupal\node_export\Form\BulkNodeExport'
+  requirements:
+    _permission: 'access content'
