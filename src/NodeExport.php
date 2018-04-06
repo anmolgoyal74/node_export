@@ -5,7 +5,7 @@
  */
 
 namespace Drupal\node_export;
-
+use Drupal\file\Entity\File;
 use Drupal\node\Entity\Node;
 
 /**
@@ -43,12 +43,7 @@ class NodeExport {
     }    
     $json=json_encode($result);
     $_SESSION['json']=$json;
-    // Download the node string as json file.
-    header('Content-type: application/json');
-    header('Content-Disposition: attachment;filename="node_string.json"');
-    header('Pragma: no-cache');
-    print_r($json);
-    // This part has to be sorted.redirect call after batch completion is printed in the json file.
-    die(); 
+    //Saving export code as json file in your public directory.
+    $file = file_save_data($json, "public://node.json", FILE_EXISTS_REPLACE);
   }  
 }

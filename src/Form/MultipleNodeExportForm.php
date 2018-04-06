@@ -78,7 +78,7 @@ class MultipleNodeExportForm extends FormBase {
       $batch['operations'][] = ['\Drupal\node_export\NodeExport::nodeExport',[$nid]];
     }
       batch_set($batch);
-      drupal_set_message(t('Please copy the Export Code and paste in your other drupal site.'));
+      drupal_set_message(t('The File with export code has been saved in your pubic direcory'));
     }
     else {
       drupal_set_message(t('There are no nodes to export.'),'error');
