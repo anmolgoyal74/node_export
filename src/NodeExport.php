@@ -43,7 +43,8 @@ class NodeExport {
     }    
     $json=json_encode($result);
     $_SESSION['json']=$json;
+    // Download the node string as json file.
     //Saving export code as json file in your public directory.
     $file = file_save_data($json, "public://node.json", FILE_EXISTS_REPLACE);
-  }  
+  }
 }

@@ -35,13 +35,21 @@ class NodeExportForm extends FormBase {
     // Reads the Node id from URL
     $nid = \Drupal::routeMatch()->getParameter('node');
     // Load the node
-    $node = \Drupal\node\Entity\Node::load($nid);
+    $node = Node::load($nid);
     $result=array();
     $count=0;
     foreach ($node as $key=>$value) {
-      $result[$count][$key]=$node->get($key)->getValue()[0];
+      if($key == 'field_tags') {
+        $tids = $node->get($key)->getValue();
+        foreach ($tids as $tid => $values) {
+          $tname[] = (\Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($values['target_id']))->name->value;
+        }
+        $result[$count][$key] = $tname;
+      }
+      else if(!empty($node->get($key)->getValue()[0])) {
+        $result[$count][$key]=$node->get($key)->getValue()[0];
+      }
     }
-
     $json=json_encode($result);
     $form['export_code'] = [
       '#type' => 'textarea',
@@ -49,28 +57,29 @@ class NodeExportForm extends FormBase {
       '#title' => t('Node Export Code is :'),
       '#rows' => '15',
     ];
-
-    $form['submit'] = array(
+    $form['submit'] = [
       '#type' => 'submit',
       '#value' => t('Download'),
-    );
-    $form['nid'] = array(
+    ];
+    $form['nid'] = [
       '#type' => 'hidden',
       '#value' => $nid,
-    );
+    ];
     return $form;
   }
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $nid = $form_state->getValue('nid');
     $data = $form_state->getValue('export_code');
+    $filename = sprintf('node_%s.json', $nid);
     header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename='.basename('node.json'));
+    header('Content-Disposition: attachment; filename='.basename($filename));
     header('Expires: 0');
     header('Cache-Control: must-revalidate');
     header('Pragma: public');
-    header('Content-Length: ' . filesize('node.json'));
+    header('Content-Length: ' . strlen($data));
     print($data);
     exit;
   }

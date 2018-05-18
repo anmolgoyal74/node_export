@@ -76,11 +76,11 @@ class MultipleNidsExportForm extends FormBase {
       'init_message'     => t('Commencing'),
       'progress_message' => t('Processed @current out of @total.'),
       'error_message'    => t('An error occurred during processing'),
-      'finished' => '\Drupal\node_export\nodeExport::NodeExportFinishedCallback',
+      'finished' => '\Drupal\node_export\NodeExport::nodeExportFinishedCallback',
     );
     foreach ($nids as $nid) {
       $nidt=trim($nid);
-      $batch['operations'][] = ['\Drupal\node_export\nodeExport::NodeExport',[$nidt]];
+      $batch['operations'][] = ['NodeExport::nodeExport',[$nidt]];
     }  
 
     batch_set($batch);
