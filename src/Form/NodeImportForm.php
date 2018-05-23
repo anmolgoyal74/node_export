@@ -17,7 +17,6 @@ use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
-
 /**
  * Provides a Node Import form.
  */
@@ -84,7 +83,6 @@ class NodeImportForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $json = $form_state->getValue('paste');
     $nodes = json_decode($json, TRUE);
-
     $batch = [
       'title' => t('Importing Nodes...'),
       'operations' => [],
@@ -94,21 +92,6 @@ class NodeImportForm extends FormBase {
       'finished' => '\Drupal\node_export\NodeImport::nodeImportFinishedCallback',
     ];
     foreach ($nodes as $node) {
-      foreach ($node['field_tags'] as $key =>$value) {
-        $properties['name'] = $value;
-        $terms = \Drupal::entityManager()->getStorage('taxonomy_term')->loadByProperties($properties);
-        if(!empty($terms)){
-            $tids[] = ['target_id' => array_keys($terms)[0]];
-        } else {
-          $new_term = \Drupal\taxonomy\Entity\Term::create([
-            'vid' => 'tags',
-            'name' => $value,
-          ]);
-          $new_term->save();
-          $tids[] = ['target_id' => $new_term->get('tid')->getValue()[0]['value']];
-        }
-      }
-      $node['field_tags'] = $tids;
       $batch['operations'][] = [
         '\Drupal\node_export\NodeImport::nodeImport',
         [$node],

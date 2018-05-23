@@ -37,7 +37,11 @@ class NodeExport {
     $count=0;
     foreach ($results as $node) {
       foreach ($node as $key=>$value) {
-        $result[$count][$key]=$node->get($key)->getValue()[0];
+        if($node->get($key)->getValue()[0] != NULL){
+          $result[$count][$key]=$node->get($key)->getValue()[0];
+        } else {
+         $result[$count][$key]=$node->get($key)->getValue(); 
+        }
       }
       $count++;
     }    
