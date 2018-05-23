@@ -1,13 +1,8 @@
 <?php
-/**
- * @file
- * Contains \Drupal\node_export\Form\BulkNodeExport
- */
+
 namespace Drupal\node_Export\Form;
 
 use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormState;
-use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\SessionManagerInterface;
@@ -15,12 +10,11 @@ use Drupal\user\PrivateTempStoreFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\RouteBuilderInterface;
 
-
 /**
  * Provides a Node Export form.
  */
 class BulkNodeExport extends FormBase {
-/**
+  /**
    * Set a var to make stepthrough form.
    *
    * @var step
@@ -91,6 +85,7 @@ class BulkNodeExport extends FormBase {
       $container->get('router.builder')
     );
   }
+
   /**
    * {@inheritdoc}
    */
@@ -102,43 +97,45 @@ class BulkNodeExport extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-   drupal_set_message($this->t('This module is experiemental. PLEASE do not use on production databases without prior testing and a complete database dump.'), 'warning'); 
+    drupal_set_message($this->t('This module is experiemental. PLEASE do not use on production databases without prior testing and a complete database dump.'), 'warning');
     $this->userInput['entities'] = $this->tempStoreFactory
-          ->get('node_export_ids')
-          ->get($this->currentUser->id());
-    $count=0;
+      ->get('node_export_ids')
+      ->get($this->currentUser->id());
+    $count = 0;
     foreach ($this->userInput['entities'] as $node) {
-      foreach ($node as $key=>$value) {
-        $result[$count][$key]=$node->get($key)->getValue()[0];
+      foreach ($node as $key => $value) {
+        $result[$count][$key] = $node->get($key)->getValue()[0];
       }
       $count++;
     }
 
-    $json=json_encode($result);
+    $json = json_encode($result);
     $form['export_code'] = [
       '#type' => 'textarea',
       '#value' => $json,
       '#title' => t('Node Export Code is :'),
       '#rows' => '15',
-    ];    
-    $form['submit'] = array(
+    ];
+    $form['submit'] = [
       '#type' => 'submit',
       '#value' => t('Download'),
-    );
+    ];
     return $form;
   }
+
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $data = $form_state->getValue('export_code');
     header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename='.basename('node.json'));
+    header('Content-Disposition: attachment; filename=' . basename('node.json'));
     header('Expires: 0');
     header('Cache-Control: must-revalidate');
     header('Pragma: public');
     header('Content-Length: ' . filesize('node.json'));
     print($data);
-    exit;  
+    exit;
   }
+
 }

@@ -1,22 +1,11 @@
 <?php
-/**
- * @file
- * Contains \Drupal\node_export\Form\NodeImportForm
- */
 
 namespace Drupal\node_Export\Form;
 
-use Drupal\node\Plugin\views\argument_default;
-use Drupal\Core\Database\Database;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\Entity\Node;
-use Drupal\Core\Entity;
-use Drupal\Core\Access\AccessibleInterface;
-use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityInterface;
+
 /**
  * Provides a Node Import form.
  */
@@ -56,7 +45,6 @@ class NodeImportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // Loads all the content types in the drupal site.
     $contentTypes = \Drupal::service('entity.manager')
@@ -83,6 +71,7 @@ class NodeImportForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $json = $form_state->getValue('paste');
     $nodes = json_decode($json, TRUE);
+
     $batch = [
       'title' => t('Importing Nodes...'),
       'operations' => [],
@@ -100,4 +89,5 @@ class NodeImportForm extends FormBase {
     batch_set($batch);
     drupal_set_message(t('Node has been imported succesfully.'));
   }
+
 }

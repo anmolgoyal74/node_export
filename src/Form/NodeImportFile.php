@@ -1,22 +1,9 @@
 <?php
-/**
- * @file
- * Contains \Drupal\node_export\Form\NodeImportFile
- */
 
 namespace Drupal\node_Export\Form;
 
-use Drupal\node\Plugin\views\argument_default;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\Entity\Node;
-use Drupal\Core\Entity;
-use Drupal\Core\Access\AccessibleInterface;
-use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Provides a Node Import form.
@@ -40,15 +27,15 @@ class NodeImportFile extends FormBase {
       // DO NOT PROVILDE '#required' => TRUE or your form will always fail validation!
     ];
     $form['submit'] = [
-    '#type' => 'submit',
-    '#value' => 'Import',
+      '#type' => 'submit',
+      '#value' => 'Import',
     ];
     return $form;
   }
+
   /**
    * {@inheritdoc}
    */
-
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
   }
@@ -57,7 +44,7 @@ class NodeImportFile extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    //$json = $form_state->getValue('paste');
+    // $json = $form_state->getValue('paste');.
     $validators = ['file_validate_extensions' => ['json']];
     $file = file_save_upload('myfile', $validators, FALSE, 0);
     if (!$file) {
@@ -84,4 +71,5 @@ class NodeImportFile extends FormBase {
     batch_set($batch);
     drupal_set_message(t('Node has been imported succesfully.'));
   }
+
 }

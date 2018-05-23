@@ -6,4 +6,3 @@ version: "8.x-3.1"
 core: "8.x"
 project: "node_export"
 datestamp: "1519888083"
-

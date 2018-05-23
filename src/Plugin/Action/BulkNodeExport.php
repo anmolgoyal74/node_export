@@ -115,8 +115,8 @@ class BulkNodeExport extends ActionBase implements ContainerFactoryPluginInterfa
     }
     // print_r($ids);
     // die();
-     $this->tempStoreFactory->get('node_export_ids')
-       ->set($this->currentUser->id(), $ids);
+    $this->tempStoreFactory->get('node_export_ids')
+      ->set($this->currentUser->id(), $ids);
   }
 
   /**
