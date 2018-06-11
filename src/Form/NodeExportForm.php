@@ -29,14 +29,7 @@ class NodeExportForm extends FormBase {
     $result = [];
     $count = 0;
     foreach ($node as $key => $value) {
-      if ($key == 'field_tags') {
-        $tids = $node->get($key)->getValue();
-        foreach ($tids as $tid => $values) {
-          $tname[] = (\Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($values['target_id']))->name->value;
-        }
-        $result[$count][$key] = $tname;
-      }
-      elseif (!empty($node->get($key)->getValue()[0])) {
+      if (!empty($node->get($key)->getValue()[0])) {
         $result[$count][$key] = $node->get($key)->getValue()[0];
       }
     }
