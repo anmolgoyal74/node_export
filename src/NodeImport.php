@@ -20,7 +20,7 @@ class NodeImport {
     if($operation == 'new'){
       // Creates an instance of node.
       $nodenew = Node::create([
-        'type'        => $node['type']['target_id'],
+        'type'        => $node['type'][0]['target_id'],
         'title'       => $node['title'],
         'body'        => $node['body'],
         'field_image' => $node['field_image'],

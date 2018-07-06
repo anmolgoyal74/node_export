@@ -59,7 +59,7 @@ class NodeImportForm extends FormBase {
     $nodes = json_decode($json, TRUE);
 
     foreach ($nodes as $node) {
-      if (!in_array($node['type']['target_id'], $contentTypesList)) {
+      if (!in_array($node['type'][0]['target_id'], $contentTypesList)) {
         $form_state->setErrorByName('Content Type', $this->t('The content type of the node you are trying to insert does not match any content type in your Drupal site'));
       }
     }

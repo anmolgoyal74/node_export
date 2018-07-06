@@ -30,7 +30,7 @@ class NodeExportForm extends FormBase {
     $count = 0;
     foreach ($node as $key => $value) {
       if (!empty($node->get($key)->getValue()[0])) {
-        $result[$count][$key] = $node->get($key)->getValue()[0];
+        $result[$count][$key] = $node->get($key)->getValue();
       }
     }
     $json = json_encode($result);
