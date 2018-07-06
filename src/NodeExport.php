@@ -1,8 +1,9 @@
 <?php
 
+namespace Drupal\node_export;
+
 use Drupal\node\Entity\Node;
 
-namespace Drupal\node_export;
 
 /**
  * Provides a Node Export function.

@@ -71,7 +71,7 @@ class MultipleNidsExportForm extends FormBase {
     ];
     foreach ($nids as $nid) {
       $nidt = trim($nid);
-      $batch['operations'][] = ['NodeExport::nodeExport', [$nidt]];
+      $batch['operations'][] = ['\Drupal\node_export\NodeExport::nodeExport', [$nidt]];
     }
 
     batch_set($batch);
