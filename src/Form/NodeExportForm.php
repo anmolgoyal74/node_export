@@ -29,7 +29,7 @@ class NodeExportForm extends FormBase {
     $result = [];
     $count = 0;
     foreach ($node as $key => $value) {
-      if (!empty($node->get($key)->getValue()[0])) {
+      if (!empty($node->get($key)->getValue())) {
         $result[$count][$key] = $node->get($key)->getValue();
       }
     }

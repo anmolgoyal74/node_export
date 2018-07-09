@@ -63,6 +63,17 @@ class NodeImportForm extends FormBase {
         $form_state->setErrorByName('Content Type', $this->t('The content type of the node you are trying to insert does not match any content type in your Drupal site'));
       }
     }
+    $field_values = [];
+    foreach ($nodes as $node) {
+      $contentType = $node['type'][0]['target_id'];
+      $bundle_fields = \Drupal::entityManager()->getFieldDefinitions('node', $contentType);
+      foreach ($node as $fields => $value) {
+        if(!array_key_exists($fields, $bundle_fields)) {
+          $form_state->setErrorByName('paste', $this->t('The content type does not have all the fields.')); 
+        }
+      }
+    }
+
   }
 
   /**
@@ -71,7 +82,6 @@ class NodeImportForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $json = $form_state->getValue('paste');
     $nodes = json_decode($json, TRUE);
-
     $batch = [
       'title' => t('Importing Nodes...'),
       'operations' => [],

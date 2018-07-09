@@ -8,7 +8,6 @@ use Drupal\node\Entity\Node;
  * Provides a Node Import function.
  */
 class NodeImport {
-
   /**
    *
    */
@@ -17,45 +16,43 @@ class NodeImport {
     $results = [];
     $config = \Drupal::config('node_export.settings');
     $operation = $config->get('node_export_import');
+    $field_values = [];
+    foreach ($node as $fields => $value) {
+      $field_values[$fields] = $value;
+    }
+    $field_values['type'] = $node['type'][0]['target_id'];
+    unset($field_values['nid']);
+    unset($field_values['vid']);
+    unset($field_values['uuid']);
     if($operation == 'new'){
       // Creates an instance of node.
-      $nodenew = Node::create([
-        'type'        => $node['type'][0]['target_id'],
-        'title'       => $node['title'],
-        'body'        => $node['body'],
-        'field_image' => $node['field_image'],
-        'field_tags' => $node['field_tags'],
-        'comment' => $node['comment'],
-      ]);
+      $nodenew = Node::create($field_values);
       // Save the node into the database.
       $nodenew->save();
       $context['message'] = $message;
       $context['results'][] = $results;
     }
     else if($operation == 'replace'){
-      if(Node::load($node['nid']['value'])){
-        $node_to_replace = Node::load($node['nid']['value']);
-        $node_to_replace->title = $node['title'];
-        $node_to_replace->body = $node['body'];
-        $node_to_replace->field_image = $node['field_image'];
-        $node_to_replace->field_tags = $node['field_tags'];
-        $node_to_replace->comment = $node['comment'];
+      if(Node::load($node['nid'][0]['value'])) {
+        $node_to_replace = Node::load($node['nid'][0]['value']);
+        foreach ($field_values as $field => $values) {
+          $node_to_replace->set($field, $values);
+        }
+        $node_to_replace->setNewRevision(TRUE);
+        $node_to_replace->setRevisionCreationTime(REQUEST_TIME);
+        $node_to_replace->setRevisionUserId($field_values['uid'][0]['target_id']);
         $node_to_replace->save();
         $context['message'] = $message;
         $context['results'][] = $results;
-      } else {
-        $nodenew = Node::create([
-          'type'        => $node['type']['target_id'],
-          'title'       => $node['title'],
-          'body'        => $node['body'],
-          'field_image' => $node['field_image'],
-          'field_tags' => $node['field_tags'],
-          'comment' => $node['comment'],
-        ]);
+      }
+      else {
+        $nodenew = Node::create($field_values);
+        $nodenew->save();
+        $context['message'] = $message;
+        $context['results'][] = $results;
       }
     }
   }
-
   /**
    *
    */
